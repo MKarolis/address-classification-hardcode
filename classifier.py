@@ -1,10 +1,13 @@
 import pandas as pd
+import re
 
 DATA_INPUT_FILENAME = 'input.txt'
 DATA_OUTPUT_FILENAME = 'classified.xlsx'
 
+POSTAL_CODE_REGEX = r'\b((([a-zA-Z]{1,3}[-\s]?)?\d{4,8}([-]\d{3})?)|((?=\w*\d)[\w]{3,4}[-\s]?(?=\w*\d)[\w]{3})|(([a-zA-Z]{1,2}[-])?\d{2,3}[-\s]\d{2,3}))\b'
+
 def read_DataFrame_from_file():
-    return pd.read_csv(DATA_INPUT_FILENAME, delimiter='\t')
+    return pd.read_csv(DATA_INPUT_FILENAME, delimiter='\t', keep_default_na=False)
 
 
 def write_DataFrame_to_excel(df: pd.DataFrame):
@@ -33,8 +36,20 @@ def write_DataFrame_to_excel(df: pd.DataFrame):
                                           'format': greenFormat})
 
 
+def does_contain_valid_postal_code(input):
+    match = re.search(POSTAL_CODE_REGEX, input)
+    if (match is not None):
+        return True
+    return False
+
+
+def is_valid_address(input):
+    return does_contain_valid_postal_code(input)
+
+
 def classify_address(dataFrame: pd.DataFrame):
-    dataFrame['complete'] = 0
+    dataFrame['complete'] = dataFrame.apply(lambda row: 1 if is_valid_address(row['person_address']) else 0, axis=1)
+
     return dataFrame
 
 
