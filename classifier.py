@@ -60,11 +60,12 @@ def contains_two_groups_number(input):
             new += 'a'
             control = False
 
-    print(new)
+    # print(new)
 
     if count == 1:
         if new[-1].isalpha():
-            print("last: " + new[-1])
+            # print("last: " + new[-1])
+            # print("Eliminated at 2")
             return False
         if new[-1].isdigit():
             return True
@@ -75,9 +76,26 @@ def contains_two_groups_number(input):
     return False
 
 
+def check_group_of_words(input):
+    a = sum(map(input.count, [',']))
+    b = sum(map(input.count, [' ']))
+    c = sum(map(input.count, [", "]))
+    d = sum(map(input.count, [" , "]))
+
+    divisions = b - c - d + a
+    # print(divisions)
+
+    if divisions >= 3:
+        return contains_two_groups_number(input)
+    else:
+        # print("Eliminated at 1")
+        return False
+
+
 def is_valid_address(input):
     # res = does_contain_valid_postal_code(input)
-    res = contains_two_groups_number(input)
+    # res = contains_two_groups_number(input)
+    res = check_group_of_words(input)
     print(input)
     print(res)
     return res
