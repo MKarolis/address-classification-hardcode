@@ -65,15 +65,19 @@ def contains_two_groups_number(input):
     if count == 1:
         if new[-1].isalpha():
             # print("last: " + new[-1])
-            # print("Eliminated at 2")
+            print("Eliminated at 2")
             return False
         if new[-1].isdigit():
-            return True
+            check_street(input)
+            # return True
 
     if count > 1:
-        return True
+        check_street(input)
+        # return True
 
-    return False
+    else:
+        print("Eliminated at 2-B")
+        return False
 
 
 def check_group_of_words(input):
@@ -88,8 +92,21 @@ def check_group_of_words(input):
     if divisions >= 3:
         return contains_two_groups_number(input)
     else:
-        # print("Eliminated at 1")
+        print("Eliminated at 1")
         return False
+
+
+def check_street(input):
+    street = ['Street', 'straat', 'Avenue', 'Rua', 'Avenida', 'Road']
+    verif = True
+
+    for elem in street:
+        if input.find(elem) > -1:
+            print('Word: ' + elem)
+            print('3a verificacao true')
+            verif = True
+
+    return verif
 
 
 def is_valid_address(input):
