@@ -1,5 +1,8 @@
 import pandas as pd
 import re
+import requests
+
+LIBPOSTAL_API_PARSE_PATH = 'http://localhost:4400/parse'
 
 DATA_INPUT_FILENAME = 'input.txt'
 DATA_OUTPUT_FILENAME = 'classified.xlsx'
@@ -43,13 +46,34 @@ def does_contain_valid_postal_code(input):
     return False
 
 
-def is_valid_address(input):
-    return does_contain_valid_postal_code(input)
+def enrich_row_with_address_details(row):
+    error_response = [0, None, None, None, None]
+
+    address = row['person_address']
+    if not address:
+        return error_response
+    
+    address = address.replace(',', ', ')
+    response = {}
+    try:
+        unmapped_response = requests.get(LIBPOSTAL_API_PARSE_PATH, params={ 'address': address }).json()
+        response = { entry['label']: entry['value'] for entry in unmapped_response }
+    except Exception as e:
+        print('Failed to parse address {} | error: {}'.format(address, e))
+        return error_response
+
+    street = response['road'] if 'road' in response else None
+    house_number = response['house_number']  if 'house_number' in response else None
+    post_code = response['postcode']  if 'postcode' in response else None
+    city = response['city']  if 'city' in response else None
+
+    complete = 1 if street and house_number and post_code and city else 0
+    
+    return complete, street, house_number, post_code, city
 
 
 def classify_address(dataFrame: pd.DataFrame):
-    dataFrame['complete'] = dataFrame.apply(lambda row: 1 if is_valid_address(row['person_address']) else 0, axis=1)
-
+    dataFrame[['complete', 'street', 'house', 'postal_code', 'city']] = dataFrame.apply(enrich_row_with_address_details, axis=1, result_type='expand')
     return dataFrame
 
 

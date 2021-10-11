@@ -1,0 +1,25 @@
+\b((([a-zA-Z]{1,3}[-\s]?)?\d{4,8}([-]\d{3})?)|((?=\w*\d)[\w]{3,4}[-\s]?(?=\w*\d)[\w]{3})|(([a-zA-Z]{1,2}[-])?\d{2,3}[-\s]\d{2,3}))\b
+
+Agrelo 3008 Piso 2· 17, Capital Federal,1221 Buenos Aires
+Hofenedergasse 6/1/38,A-1020 Vienna
+84 PITT STREET SYDNEY, NEW SOUTH WALES 2000
+Sint Annalaan 132 B,1800-Vilvoode
+129090, Moskva, ul. B. Spasskaya, 25, stroenie 3, OOO 'YUridicheskaya 
+Rua Marechal Hermes 810/302,30430-030 Bairro Gutierrez, Belo Horizonte
+Rua Afonso Bras, 155-7 andar,Vila Nova Conceicao CEP 04511010 San Paulo
+Rua Adalberto Aranha 19, ap. 501, Tijuca,CEP-20540-140 Rio de Janeiro
+BR-22070 Rio de Janeiro
+20 Chemin Elm,Luskville, QC J0X 2G0
+455 Boleskine Road,Victoria, British Columbia V8Z1E7
+1168 Arena Road Unit 135,Mississauga, Ontario L4y 4K7
+Riedikerstrasse 84,CH-8616 Riedikon
+Calle 31 No. 18207 apto 20 entre 182 y 184, Playa, La Habana 11 600 CU
+Dolni Studenky,788 20 Dolni Studenky
+Löönemere tee 64-7, EE0039 Tallinn, ESTONIA
+Verkkokuja 7 B,FIN-02230 Espoo
+24 Simpson Street Battersea,London, SW11 3HN
+6 Dervenakion Str.,GR-153 51 Pallini Attikis
+Senhora de Fátima Edifício,Luxemburgo,N 95 1 C,P-4750-154 Arcozelo-Barcelos
+Dälavägen 87,S-437 36 Torslanda
+Bezpieczenstwo i Ochrona Przeciwpozarowa,Biuro Ekspertyz,Doradztwa i Nadzoru,Ul. Grabowa 9,62-051 Wiry
+
