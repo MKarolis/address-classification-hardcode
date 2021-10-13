@@ -62,14 +62,26 @@ def enrich_row_with_address_details(row):
         print('Failed to parse address {} | error: {}'.format(address, e))
         return error_response
 
+    city = response['city'] if 'city' in response else None
+    post_code = response['postcode'] if 'postcode' in response else None
     street = response['road'] if 'road' in response else None
-    house_number = response['house_number']  if 'house_number' in response else None
-    post_code = response['postcode']  if 'postcode' in response else None
-    city = response['city']  if 'city' in response else None
+    house_number = response['house_number'] if 'house_number' in response else None
+
+    if city is not None and post_code is None:
+        post_code = fix_city_postcode_together(address, city)
 
     complete = 1 if street and house_number and post_code and city else 0
     
     return complete, street, house_number, post_code, city
+
+
+def fix_city_postcode_together(address, city):
+    postcode = ""
+
+    words = address.split()
+    print(words)
+
+    return postcode
 
 
 def classify_address(dataFrame: pd.DataFrame):
