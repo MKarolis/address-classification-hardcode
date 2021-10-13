@@ -3,6 +3,9 @@ import pandas as pd
 import re
 import requests
 import json
+import time
+import re
+import numpy as np
 
 DATA_INPUT_FILENAME = 'input.txt'
 DATA_OUTPUT_FILENAME = 'classified.xlsx'
@@ -50,14 +53,32 @@ def does_contain_valid_postal_code(input):
 
 
 def does_contain_valid_city_name(input):
-    
 
-    return bool([city for city in cities if(city in input)])
+    # for city in cities_df:
+    #     if (city in input):
+    #         return True
+
+    # # c = cities1_df
+
+    # # return bool([city for city in cities1 if(city in input)])
+    # return False
+    
+    # boolean_findings = cities_series.str.contains('Gorinchem')
+    
+    # print(boolean_findings)
+    
+    # total_occurrency = boolean_findings.sum()
+    cities_series.str.any
+    
+    if(cities_series.str.any('Gorinchem') > -1):
+        return True
+    
+    return False
 
 
 def is_valid_address(input):
     # return does_contain_valid_postal_code(input)
-    
+
     return does_contain_valid_city_name(input)
 
 
@@ -69,19 +90,30 @@ def classify_address(dataFrame: pd.DataFrame):
 
 
 if __name__ == '__main__':
-    
-    cities_url = "https://pkgstore.datahub.io/core/world-cities/world-cities_json/data/5b3dd46ad10990bca47b04b4739a02ba/world-cities_json.json"
-    cities_json = json.loads(requests.get(cities_url).content.decode('utf8'))
 
-    # countries = set([city['country'] for city in cities_json])
-    cities = set([city['name'] for city in cities_json])
+    start = time.time()
+
+    # cities_url = "https://pkgstore.datahub.io/core/world-cities/world-cities_json/data/5b3dd46ad10990bca47b04b4739a02ba/world-cities_json.json"
+    # cities1_json = json.loads(requests.get(cities_url).content.decode('utf8'))
+    # cities1 = set([city['name'] for city in cities1_json])
+    # cities1_df = pd.DataFrame([city['name'] for city in cities1_json], columns=['City'])
+
+    # cities_numpy = np.array([city['name'] for city in cities1_json])
+    # cities_array = [city['name'] for city in cities1_json]
+    # print(cities_numpy)
+
+    # dr5hn_cities_url = "https://raw.githubusercontent.com/dr5hn/countries-states-cities-database/master/cities.json"
+    # cities2_json = json.loads(requests.get(
+    #     dr5hn_cities_url).content.decode('utf8'))
+    # cities2 = set([c['name'] for c in cities2_json])
+
+    # cities = list(cities2.union(cities1))
+    # cities_df = pd.DataFrame(cities2.union(cities1), columns=['City'])
+    
+    cities_series = pd.Series(['Osaka', 'Tokyo', 'Gorinchem'])
     
     classified = classify_address(read_DataFrame_from_file())
     write_DataFrame_to_excel(classified)
 
-    
-    
-    
-    
-    
-    
+    end = time.time()
+    print(f"Tempo em segundos: {end - start}")
