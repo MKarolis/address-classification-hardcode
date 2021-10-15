@@ -7,7 +7,7 @@ LIBPOSTAL_API_PARSE_PATH = 'http://localhost:4400/parse'
 DATA_INPUT_FILENAME = 'input.txt'
 DATA_OUTPUT_FILENAME = 'classified.xlsx'
 
-POSTAL_CODE_REGEX = r'\b((([a-zA-Z]{1,3}[-\s]?)?\d{4,8}([-]\d{3})?)|((?=\w*\d)[\w]{3,4}[-\s]?(?=\w*\d)[\w]{3})|(([a-zA-Z]{1,2}[-])?\d{2,3}[-\s]\d{2,3}))\b'
+POSTAL_CODE_REGEX = r'\b(?<!\-)((([a-zA-Z]{1,3}[-\s]?)?\d{4,8}([-]\d{3})?)|((?=\w*\d)[\w]{3,4}[-\s]?(?=\w*\d)[\w]{3})|(([a-zA-Z]{1,2}[-])?\d{2,3}[-\s]\d{2,3}))\b(?!-)'
 
 def read_DataFrame_from_file():
     return pd.read_csv(DATA_INPUT_FILENAME, delimiter='\t', keep_default_na=False)
@@ -39,11 +39,46 @@ def write_DataFrame_to_excel(df: pd.DataFrame):
                                           'format': greenFormat})
 
 
+def extract_postal_code(input):
+    match = re.search(POSTAL_CODE_REGEX, input)
+    if (match is not None):
+        return match.group(0)
+    return None
+
+
 def does_contain_valid_postal_code(input):
     match = re.search(POSTAL_CODE_REGEX, input)
     if (match is not None):
         return True
     return False
+
+
+def count_words(input):
+    return len(re.findall(r'[^\s,]+', input))
+
+
+def collect_property_list(property, array):
+    return list(map(lambda row: row['value'] , filter(lambda row: row['label'] == property , array)))
+
+
+def get_normalized_house_number_and_postal(house_numbers):
+    house_num = None
+    postal = None
+
+    for number in house_numbers:
+        if house_num and postal:
+            break
+        possible_postal = extract_postal_code(number)
+
+        if not postal and possible_postal:
+            postal = possible_postal
+            number = number.replace(possible_postal, '').strip()
+
+        if not house_num and number and len(number) > 0:
+            house_num = number
+
+
+    return house_num, postal
 
 
 def enrich_row_with_address_details(row):
@@ -54,18 +89,30 @@ def enrich_row_with_address_details(row):
         return error_response
     
     address = address.replace(',', ', ')
-    response = {}
+    address = address.replace(' - ', '-')
     try:
         unmapped_response = requests.get(LIBPOSTAL_API_PARSE_PATH, params={ 'address': address }).json()
-        response = { entry['label']: entry['value'] for entry in unmapped_response }
     except Exception as e:
         print('Failed to parse address {} | error: {}'.format(address, e))
         return error_response
 
-    street = response['road'] if 'road' in response else None
-    house_number = response['house_number']  if 'house_number' in response else None
-    post_code = response['postcode']  if 'postcode' in response else None
-    city = response['city']  if 'city' in response else None
+    roads = collect_property_list('road', unmapped_response)
+    house_numbers = collect_property_list('house_number', unmapped_response)
+    post_codes = collect_property_list('postcode', unmapped_response)
+    cities = collect_property_list('city', unmapped_response)
+
+    street = roads[0] if len(roads) > 0 else None
+    house_number = house_numbers[0] if len(house_numbers) > 0 else None
+    post_code = post_codes[0] if len(post_codes) > 0 else None
+    city = cities[0] if len(cities) > 0 else None
+
+    if not post_code:
+        tmp_house_num, tmp_postal = get_normalized_house_number_and_postal(house_numbers)
+        if tmp_house_num and tmp_postal:
+            house_number = tmp_house_num
+            post_code = tmp_postal
+            if street and house_number and post_code and city:
+                print('NORMALIZED POSTAL CODE FROM HOUSE NUMBER FOR ', address) 
 
     complete = 1 if street and house_number and post_code and city else 0
     
