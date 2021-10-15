@@ -1,4 +1,6 @@
 .ipynb_checkpoints
 */.ipynb_checkpoints/*
 ~$*.xlsx
+.DS_Store
+.idea
 classified.xlsx
