@@ -1,6 +1,10 @@
+import json
 import pandas as pd
 import re
 import requests
+import time
+import urllib.parse
+import urllib.request
 
 LIBPOSTAL_API_PARSE_PATH = 'http://localhost:4400/parse'
 
@@ -8,6 +12,8 @@ DATA_INPUT_FILENAME = 'input.txt'
 DATA_OUTPUT_FILENAME = 'classified.xlsx'
 
 POSTAL_CODE_REGEX = r'\b((([a-zA-Z]{1,3}[-\s]?)?\d{4,8}([-]\d{3})?)|((?=\w*\d)[\w]{3,4}[-\s]?(?=\w*\d)[\w]{3})|(([a-zA-Z]{1,2}[-])?\d{2,3}[-\s]\d{2,3}))\b'
+
+key = r'AIzaSyBBhpByne0olNb3kPIKceo5Q9uAtYH5s_k'
 
 
 def read_DataFrame_from_file():
@@ -42,9 +48,9 @@ def write_DataFrame_to_excel(df: pd.DataFrame):
 
 def does_contain_valid_postal_code(input):
     match = re.search(POSTAL_CODE_REGEX, input)
-    if (match is not None):
-        return True
-    return False
+    if match is not None:
+        return match.group(0)
+    return None
 
 
 def contains_two_groups_number(input):
@@ -54,19 +60,24 @@ def contains_two_groups_number(input):
 
 
 def check_group_of_words(input):
-    a = sum(map(input.count, [',']))
+    """a = sum(map(input.count, [',']))
     b = sum(map(input.count, [' ']))
     c = sum(map(input.count, [", "]))
-    d = sum(map(input.count, [" , "]))
+    d = sum(map(input.count, [" , "]))"""
 
-    divisions = b - c - d + a
+    words = input.split()
+    if len(words) >= 4:
+        return True
+    return False
+
+    """divisions = b - c - d + a
     # print(divisions)
 
     if divisions >= 3:
         return True
     else:
         print("Eliminated at 1")
-        return False
+        return False"""
 
 
 def enrich_row_with_address_details(row):
@@ -101,6 +112,9 @@ def enrich_row_with_address_details(row):
         street = response['road'] if 'road' in response else None
         house_number = response['house_number'] if 'house_number' in response else None
 
+        if city is not None and street is not None and house_number is not None and post_code is None:
+            post_code = does_contain_valid_postal_code(address)
+
         if city is not None and post_code is None:
             post_code = fix_city_postcode_together(address, city)
 
@@ -110,9 +124,12 @@ def enrich_row_with_address_details(row):
 
 
 def fix_city_postcode_together(address, city):
-
     # Panacea Biotec Ltd. B-1 Extn./A-27 Mohan Co-operative Industrial Estate Mathura Road,New Delhi 110 044
     address = address.replace(',', ' ')
+    address = address.replace(';', ' ')
+    address = address.replace(" '", ' ')
+    address = address.replace("(", ' ')
+    address = address.replace(")", ' ')
     words = address.lower().split()
     length = len(words)
 
@@ -120,38 +137,41 @@ def fix_city_postcode_together(address, city):
 
 
 def get_next_before_in_list(words, city):
-    postcode = ""
+    postcode = None
     names = city.lower().split()
     length = len(names)
     new = []
 
-    if length >= 1:
-        print(words)
-        i = words.index(names[0])
-        before = words[i - 1]
-        if any(char.isdigit() for char in before):
-            postcode = before
-        else:
-            for idx in range(length):
-                new.append(words[words.index(names[idx])])
-            if new == names and (words.index(names[idx])+1) < length:
-                after = words[words.index(names[idx])+1]
-                if any(char.isdigit() for char in after):
-                    postcode = after
-    else:
-        if (words.index(city) - 1) < length:
-            before = words[words.index(city) - 1]
-            print(before)
-            if any(i.isdigit() for i in before):
+    try:
+        if length >= 1:
+            print(words)
+            i = words.index(names[0])
+            before = words[i - 1]
+            if any(char.isdigit() for char in before):
                 postcode = before
-        if (words.index(city) + 1) < length:
-            after = words[words.index(city) + 1]
-            print(after)
-            if any(i.isdigit() for i in after):
-                postcode = after
+            else:
+                for idx in range(length):
+                    new.append(words[words.index(names[idx])])
+                if new == names and (words.index(names[idx]) + 1) < length:
+                    after = words[words.index(names[idx]) + 1]
+                    if any(char.isdigit() for char in after):
+                        postcode = after
+        else:
+            if (words.index(city) - 1) < length:
+                before = words[words.index(city) - 1]
+                print(before)
+                if any(i.isdigit() for i in before):
+                    postcode = before
+            if (words.index(city) + 1) < length:
+                after = words[words.index(city) + 1]
+                print(after)
+                if any(i.isdigit() for i in after):
+                    postcode = after
+    except Exception as e:
+        print('Failed to parse address {} | error: {}'.format(words, e))
+        return None
 
     return postcode
-
 
 
 def get_next_before(words, city):
