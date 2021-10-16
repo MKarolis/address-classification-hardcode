@@ -60,24 +60,10 @@ def contains_two_groups_number(input):
 
 
 def check_group_of_words(input):
-    """a = sum(map(input.count, [',']))
-    b = sum(map(input.count, [' ']))
-    c = sum(map(input.count, [", "]))
-    d = sum(map(input.count, [" , "]))"""
-
     words = input.split()
-    if len(words) >= 4:
+    if len(words) - 1 >= 4:
         return True
     return False
-
-    """divisions = b - c - d + a
-    # print(divisions)
-
-    if divisions >= 3:
-        return True
-    else:
-        print("Eliminated at 1")
-        return False"""
 
 
 def enrich_row_with_address_details(row):
@@ -89,14 +75,17 @@ def enrich_row_with_address_details(row):
     house_number = None
 
     address = row['person_address']
+    country = row['person_ctry_code']
+
+    complete = 0
+
     if not address:
         return error_response
 
     response = {}
 
-    """test = contains_two_groups_number(address)
-    print(test)
-    print(address)"""
+    if country == 'RU':
+        address = treat_russian_address(address)
 
     if contains_two_groups_number(address):
         address = address.replace(',', ', ')
@@ -118,14 +107,111 @@ def enrich_row_with_address_details(row):
         if city is not None and post_code is None:
             post_code = fix_city_postcode_together(address, city)
 
-    complete = 1 if street and house_number and post_code and city else 0
+        if country == 'RU' and street is None:
+            street = fix_russian_street(address)
+
+        if country == 'RU' and city is None:
+            city = fix_russian_city(address)
+
+        complete = 1 if street and house_number and post_code and city else 0
 
     return complete, street, house_number, post_code, city
 
 
+def fix_russian_street(input):
+    words = input.split(',')
+    try:
+        res = [idx for idx in words if idx.lower().startswith('ul.')]
+        print('cheguei aqui tambem')
+
+        return res
+    except Exception as e:
+        print('Failed to parse address {} | error: {}'.format(words, e))
+        return None
+
+
+def fix_russian_city(input):
+    words = input.split(',')
+    try:
+        for word in words:
+            if word.lower().startswith('g.'):
+                return word
+
+    except Exception as e:
+        print('Failed to parse address {} | error: {}'.format(words, e))
+        return None
+
+
+def treat_russian_address(input):
+    words = input.split(',')
+    post = ''
+    city = ''
+    new_address = ''
+
+    """try:
+        for word in words:
+            if word.lower().startswith('g.'):
+                city += word
+        print('cheguei aqui tambem')
+        words.remove(city)
+    except Exception as e:
+        print('Failed to parse address {} | error: {}'.format(words, e))"""
+
+    for word in words:
+        if len(word) == 6 and word.isnumeric():
+            post += word
+            city += words[words.index(post) + 1]
+            words.remove(city)
+            words.remove(post)
+            break
+
+    for word in words:
+        new_address += word
+        new_address += ', '
+
+    new_address += city
+    new_address += ', '
+    new_address += post
+
+    print('new address')
+    print(new_address)
+
+    return new_address
+
+
+def split_input(address):
+    address = address.replace(',', ' ')
+    address = address.replace(';', ' ')
+    address = address.replace(" '", ' ')
+    address = address.replace("(", ' ')
+    address = address.replace(")", ' ')
+    words = address.lower().split()
+    return words
+
+
+def russian_postal_code(input):
+    words = split_input(input)
+    for word in words:
+        if len(word) == 6 and word.isnumeric():
+            print('cheguei aqui')
+            return word
+
+
+def russian_city(input):
+    words = split_input(input)
+    try:
+        road_code = words.index('g.')
+        print('cheguei aqui tambem')
+
+        return words[road_code + 1]
+    except Exception as e:
+        print('Failed to parse address {} | error: {}'.format(words, e))
+        return None
+
+
 def fix_city_postcode_together(address, city):
     # Panacea Biotec Ltd. B-1 Extn./A-27 Mohan Co-operative Industrial Estate Mathura Road,New Delhi 110 044
-    address = address.replace(',', ' ')
+    """address = address.replace(',', ' ')
     address = address.replace(';', ' ')
     address = address.replace(" '", ' ')
     address = address.replace("(", ' ')
@@ -133,40 +219,48 @@ def fix_city_postcode_together(address, city):
     words = address.lower().split()
     length = len(words)
 
+    print('enter')"""
+
+    words = split_input(address)
+
     return get_next_before_in_list(words, city)
 
 
 def get_next_before_in_list(words, city):
+    print('deeper')
     postcode = None
     names = city.lower().split()
     length = len(names)
     new = []
 
     try:
-        if length >= 1:
+        if length > 1:
             print(words)
             i = words.index(names[0])
             before = words[i - 1]
             if any(char.isdigit() for char in before):
-                postcode = before
+                return before
             else:
                 for idx in range(length):
                     new.append(words[words.index(names[idx])])
-                if new == names and (words.index(names[idx]) + 1) < length:
+                if new == names:  # and (words.index(names[len(names)-1]) + 1) < length:
                     after = words[words.index(names[idx]) + 1]
                     if any(char.isdigit() for char in after):
-                        postcode = after
+                        print('found')
+                        return after
         else:
-            if (words.index(city) - 1) < length:
-                before = words[words.index(city) - 1]
-                print(before)
-                if any(i.isdigit() for i in before):
-                    postcode = before
-            if (words.index(city) + 1) < length:
-                after = words[words.index(city) + 1]
-                print(after)
-                if any(i.isdigit() for i in after):
-                    postcode = after
+            # if (words.index(city) - 1) > 0:
+            before = words[words.index(city) - 1]
+            print('1 ---')
+            if any(i.isdigit() for i in before):
+                return before
+
+            after = words[words.index(city) + 1]
+            print(after)
+            if any(i.isdigit() for i in after):
+                print('2++')
+                return after
+
     except Exception as e:
         print('Failed to parse address {} | error: {}'.format(words, e))
         return None
