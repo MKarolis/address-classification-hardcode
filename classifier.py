@@ -60,8 +60,8 @@ def contains_two_groups_number(input):
 
 
 def check_group_of_words(input):
-    words = input.split()
-    if len(words) - 1 >= 4:
+    words = split_input(input)
+    if len(words) > 3:
         return True
     return False
 
@@ -84,9 +84,6 @@ def enrich_row_with_address_details(row):
 
     response = {}
 
-    """if country == 'RU':
-        address = treat_russian_address(address)"""
-
     if contains_two_groups_number(address):
         address = address.replace(',', ', ')
         try:
@@ -104,37 +101,9 @@ def enrich_row_with_address_details(row):
         if city is not None and street is not None and house_number is not None and post_code is None:
             post_code = does_contain_valid_postal_code(address)
 
-        if city is not None and post_code is None:
-            post_code = fix_city_postcode_together(address, city)
-
         complete = 1 if street and house_number and post_code and city else 0
 
     return complete, street, house_number, post_code, city
-
-
-"""def treat_russian_address(input):
-    words = input.split(',')
-    post = ''
-    city = ''
-    new_address = ''
-
-    for word in words:
-        if len(word) == 6 and word.isnumeric():
-            post += word
-            city += words[words.index(post) + 1]
-            words.remove(city)
-            words.remove(post)
-            break
-
-    for word in words:
-        new_address += word
-        new_address += ', '
-
-    new_address += city
-    new_address += ', '
-    new_address += post
-
-    return new_address"""
 
 
 def split_input(address):
@@ -152,42 +121,6 @@ def fix_city_postcode_together(address, city):
     words = split_input(address)
 
     return get_next_before_in_list(words, city)
-
-
-def get_next_before_in_list(words, city):
-    postcode = None
-    names = city.lower().split()
-    length = len(names)
-    new = []
-
-    try:
-        if length > 1:
-            i = words.index(names[0])
-            before = words[i - 1]
-            if any(char.isdigit() for char in before):
-                return before
-            else:
-                for idx in range(length):
-                    new.append(words[words.index(names[idx])])
-                if new == names:  # and (words.index(names[len(names)-1]) + 1) < length:
-                    after = words[words.index(names[idx]) + 1]
-                    if any(char.isdigit() for char in after):
-                        return after
-        else:
-            # if (words.index(city) - 1) > 0:
-            before = words[words.index(city) - 1]
-            if any(i.isdigit() for i in before):
-                return before
-
-            after = words[words.index(city) + 1]
-            if any(i.isdigit() for i in after):
-                return after
-
-    except Exception as e:
-        print('Failed to find postcode {} | error: {}'.format(words, e))
-        return None
-
-    return postcode
 
 
 def classify_address(dataFrame: pd.DataFrame):

@@ -4,6 +4,7 @@
     <list default="true" id="432e7e66-bcdf-4be2-b0c2-1b3701a0c1cb" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/classifier.py" beforeDir="false" afterPath="$PROJECT_DIR$/classifier.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notebook-Copy1.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/notebook-Copy1.ipynb" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -63,6 +64,7 @@
       <workItem from="1634285495492" duration="2560000" />
       <workItem from="1634306757236" duration="9768000" />
       <workItem from="1634408088085" duration="10835000" />
+      <workItem from="1634458709701" duration="2689000" />
     </task>
     <servers />
   </component>
@@ -70,6 +72,6 @@
     <option name="version" value="3" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/address_classification_hardcode$classifier.coverage" NAME="classifier Coverage Results" MODIFIED="1634420018878" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/address_classification_hardcode$classifier.coverage" NAME="classifier Coverage Results" MODIFIED="1634461428734" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>
