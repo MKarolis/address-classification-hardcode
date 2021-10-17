@@ -64,7 +64,7 @@ def enrich_row_with_address_details(row):
     if len(address.split()) < 3:
         return error_response
 
-    validate_asian_address_before_api(address, country)
+    address = validate_asian_address_before_api(address, country)
 
     response = {}
     try:
@@ -94,14 +94,15 @@ def validate_asian_postal_code_before_api(address, number):
       
         old_postal_code = japanese_postal_code[0]
         new_postal_code = old_postal_code[:3] + "-" + old_postal_code[3:]
-        address = address.replace(old_postal_code, new_postal_code)
+        return address.replace(old_postal_code, new_postal_code)
         
         print(f'address: {address}, before: {old_postal_code}, after: {new_postal_code}')
 
 def validate_asian_address_before_api(address, country):
     
-    if country == 'JP': validate_asian_postal_code_before_api(address, 7)
-    elif country == 'CN' or country == 'KR': validate_asian_postal_code_before_api(address, 6)
+    if country == 'JP': return validate_asian_postal_code_before_api(address, 7)
+    elif country == 'CN' or country == 'KR': return validate_asian_postal_code_before_api(address, 6)
+    else: return address
 
 
 def classify_address(dataFrame: pd.DataFrame):
