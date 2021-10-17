@@ -143,6 +143,8 @@ def validate_asian_postal_code_before_api(address, number):
         return address.replace(old_postal_code, new_postal_code)
         
         print(f'address: {address}, before: {old_postal_code}, after: {new_postal_code}')
+        
+    return address
 
 def validate_asian_address_before_api(address, country):
     
