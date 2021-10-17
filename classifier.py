@@ -78,9 +78,8 @@ def get_normalized_house_number_and_postal(house_numbers):
             postal = possible_postal
             number = number.replace(possible_postal, '').strip()
 
-        if not house_num and number and len(number) > 0:
+        if not house_num and number and len(re.findall(r'\d+', number)) > 0:
             house_num = number
-
 
     return house_num, postal
 
@@ -118,13 +117,29 @@ def enrich_row_with_address_details(row):
     post_code = post_codes[0] if len(post_codes) > 0 else None
     city = cities[0] if len(cities) > 0 else None
 
-    if not post_code:
+    # Try and resolve cities for specific countries
+    if not city:
+        # Australian cities often have suburbs instead of cities in the addresses 
+        if country == 'AU':
+            suburbs = collect_property_list('suburb', unmapped_response)
+            city = suburbs[0] if len(suburbs) > 0 else None
+        # Cities of Russian addresses sometimes go before the street (moskva ul. b. spasskaja 25) and get classified as roads
+        elif len(re.findall(r'ul\.', address)) > 0:
+            for city_road in filter(lambda road: len(re.findall(r'ul\.', road)) > 0,  roads):
+                match = re.search(r'(\w+)\s+ul\.', city_road)
+                if match and match.group(1):
+                    city = match.group(1)
+                    print('RESOLVED CITY ', city, ' FROM address ', address)
+                    break    
+
+    if house_number and not post_code:
+        # Try and resolve a postal code possibly classified as a house number
         tmp_house_num, tmp_postal = get_normalized_house_number_and_postal(house_numbers)
         if tmp_house_num and tmp_postal:
             house_number = tmp_house_num
             post_code = tmp_postal
             if street and house_number and post_code and city:
-                print('NORMALIZED POSTAL CODE FROM HOUSE NUMBER FOR ', address) 
+                print('NORMALIZED POSTAL CODE FROM HOUSE NUMBER FOR ', address)
 
     
     complete = 1 if (street or country =='JP' or country == 'KR' or country == 'CN') and house_number and post_code and city else 0
@@ -141,9 +156,7 @@ def validate_asian_postal_code_before_api(address, number):
         old_postal_code = japanese_postal_code[0]
         new_postal_code = old_postal_code[:3] + "-" + old_postal_code[3:]
         return address.replace(old_postal_code, new_postal_code)
-        
-        print(f'address: {address}, before: {old_postal_code}, after: {new_postal_code}')
-        
+                
     return address
 
 def validate_asian_address_before_api(address, country):
@@ -159,7 +172,6 @@ def classify_address(dataFrame: pd.DataFrame):
     return dataFrame
 
 
-
 if __name__ == '__main__':
 
     start=time.time()
@@ -169,4 +181,4 @@ if __name__ == '__main__':
 
     end=time.time()
 
-    print(f"\nTime in seconds: {end - start}")
+    print(f"\nExecution time in seconds: {end - start}")
