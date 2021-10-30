@@ -50,17 +50,6 @@ def extract_postal_code(input):
     return None
 
 
-def does_contain_valid_postal_code(input):
-    match = re.search(POSTAL_CODE_REGEX, input)
-    if (match is not None):
-        return True
-    return False
-
-
-def count_words(input):
-    return len(re.findall(r'[^\s,]+', input))
-
-
 def collect_property_list(property, array):
     return list(map(lambda row: row['value'] , filter(lambda row: row['label'] == property , array)))
 
