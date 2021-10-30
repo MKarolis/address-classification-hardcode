@@ -1,6 +1,7 @@
 # Address completeness classification using python and LibPostal
 
 Refer to jupyter notebooks within the repo for documentation about the project.
+
 This is a solution of an exercise for Data & AI course at UC Leuven-Limburg, 2021
 
 ## Intructions for running the solution
